@@ -57,6 +57,14 @@ spec:
           claimName: psql-data-pvc
       - name: psql-socket
         emptyDir: {}
+      - name: scap-data
+        emptyDir: {}
+      - name: cert-data
+        emptyDir: {}
+      - name: data-objects
+        emptyDir: {}
+      - name: gpg-data
+        emptyDir: {}
       {{ end }}
       {{- if eq .Values.openvasd.tls.certificates.deploy_server true }}
       - name: ingress-certificate
@@ -104,62 +112,92 @@ spec:
         image: "{{ .Values.vulnerabilityservices.scapdata.repository }}:{{ .Values.vulnerabilityservices.scapdata.tag }}"
         imagePullPolicy: "{{ .Values.vulnerabilityservices.scapdata.pullPolicy }}"
         volumeMounts:
-          - name: gvmd-data
-            mountPath: /var/lib/gvm/scap-data
-            subPath: scap-data
+          - name: scap-data
+            mountPath: /mnt
         env:
           - name: MOUNT_PATH 
-            value: "/var/lib/gvm/scap-data" 
+            value: "/mnt"
       - name: cert-data
         image: "{{ .Values.vulnerabilityservices.certdata.repository }}:{{ .Values.vulnerabilityservices.certdata.tag }}"
         imagePullPolicy: "{{ .Values.vulnerabilityservices.certdata.pullPolicy }}"
         volumeMounts:
-          - name: gvmd-data
-            mountPath: /var/lib/gvm/cert-data
-            subPath: cert-data
+          - name: cert-data
+            mountPath: /mnt
         env:
           - name: MOUNT_PATH 
-            value: "/var/lib/gvm/cert-data" 
+            value: "/mnt" 
       - name: dnf-cert-data
         image: "{{ .Values.vulnerabilityservices.dnfcertdata.repository }}:{{ .Values.vulnerabilityservices.dnfcertdata.tag }}"
         imagePullPolicy: "{{ .Values.vulnerabilityservices.dnfcertdata.pullPolicy }}"
         volumeMounts:
-          - name: gvmd-data
-            mountPath: /var/lib/gvm/cert-data
-            subPath: cert-data
+          - name: cert-data
+            mountPath: /mnt
         env:
           - name: MOUNT_PATH 
-            value: "/var/lib/gvm/cert-data" 
+            value: "/mnt" 
       - name: data-objects
         image: "{{ .Values.vulnerabilityservices.dataobjects.repository }}:{{ .Values.vulnerabilityservices.dataobjects.tag }}"
         imagePullPolicy: "{{ .Values.vulnerabilityservices.dataobjects.pullPolicy }}"
         volumeMounts:
-          - name: gvmd-data
-            mountPath: /var/lib/gvm/data-objects
-            subPath: data-objects
+          - name: data-objects
+            mountPath: /mnt
         env:
           - name: MOUNT_PATH 
-            value: "/var/lib/gvm/data-objects" 
+            value: "/mnt"
       - name: reports-formats
         image: "{{ .Values.vulnerabilityservices.reportsformats.repository }}:{{ .Values.vulnerabilityservices.reportsformats.tag }}"
         imagePullPolicy: "{{ .Values.vulnerabilityservices.reportsformats.pullPolicy }}"
         volumeMounts:
+          - name: data-objects
+            mountPath: /mnt
+        env:
+          - name: MOUNT_PATH 
+            value: "/mnt"
+      - name: move-data
+        image: "{{ .Values.vulnerabilityservices.scapdata.repository }}:{{ .Values.vulnerabilityservices.scapdata.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.scapdata.pullPolicy }}"
+        volumeMounts:
+          - name: scap-data
+            mountPath: /mnt/scap-data
+          - name: cert-data
+            mountPath: /mnt/cert-data
+          - name: data-objects
+            mountPath: /mnt/data-objects
+          - name: gvmd-data
+            mountPath: /var/lib/gvm/scap-data
+            subPath: scap-data
+          - name: gvmd-data
+            mountPath: /var/lib/gvm/cert-data
+            subPath: cert-data
           - name: gvmd-data
             mountPath: /var/lib/gvm/data-objects
             subPath: data-objects
-        env:
-          - name: MOUNT_PATH 
-            value: "/var/lib/gvm/data-objects" 
+        command: ['/bin/sh', '-c']
+        args:
+          - mv -vf /mnt/scap-data/* /var/lib/gvm/scap-data/;
+            mv -vf /mnt/cert-data/* /var/lib/gvm/cert-data/;
+            mv -vf /mnt/data-objects/* /var/lib/gvm/data-objects/;
       - name: gpg-data
         image: "{{ .Values.vulnerabilityservices.gpgdata.repository }}:{{ .Values.vulnerabilityservices.gpgdata.tag }}"
         imagePullPolicy: "{{ .Values.vulnerabilityservices.gpgdata.pullPolicy }}"
         volumeMounts:
+          - name: gpg-data
+            mountPath: /mnt
+        env:
+          - name: MOUNT_PATH 
+            value: "/mnt"
+      - name: move-gpg-data
+        image: "{{ .Values.vulnerabilityservices.scapdata.repository }}:{{ .Values.vulnerabilityservices.scapdata.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.scapdata.pullPolicy }}"
+        volumeMounts:
+          - name: gpg-data
+            mountPath: /mnt
           - name: openvas-config
             mountPath: /etc/openvas/gnupg
             subPath: gnupg
-        env:
-          - name: MOUNT_PATH 
-            value: "/etc/openvas/gnupg" 
+        command: ['/bin/sh', '-c']
+        args:
+          - mv -vf /mnt/* /etc/openvas/gnupg/; 
       {{ end }}
       {{- if eq .Values.openvasd.scanner_type "ospd" }}
       - name: ospd-disable-notus-hashsum-verification #since can mount local volumes which may be altered we have to disable hashsum verification for notus  
