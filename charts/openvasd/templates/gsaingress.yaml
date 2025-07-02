@@ -1,5 +1,5 @@
 {{- if and .Values.vulnerabilityservices.gsa.ingress.enabled (eq .Values.vulnerabilityservices.enabled true) -}}
-{{- $fullName := "gsa-ingress" -}}
+{{- $fullName := include "openvasd.fullname" . -}}
 {{- $svcPort := .Values.vulnerabilityservices.gsa.service.port -}}
 {{- $k8sVersion := .Capabilities.KubeVersion.Version -}}
 {{- if and .Values.vulnerabilityservices.gsa.ingress.className (not (ge  $k8sVersion "1.18.0")) }}
@@ -16,7 +16,7 @@ apiVersion: extensions/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
+  name: "gsa-ingress"
   labels:
     {{- include "openvasd.labels" . | nindent 4 }}
   {{- with .Values.vulnerabilityservices.gsa.ingress.annotations }}
