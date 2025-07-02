@@ -1,0 +1,62 @@
+{{- if and .Values.vulnerabilityservices.gsa.ingress.enabled (eq .Values.vulnerabilityservices.enabled true) -}}
+{{- $fullName := "gsa-ingress" -}}
+{{- $svcPort := .Values.vulnerabilityservices.gsa.service.port -}}
+{{- $k8sVersion := .Capabilities.KubeVersion.Version -}}
+{{- if and .Values.vulnerabilityservices.gsa.ingress.className (not (ge  $k8sVersion "1.18.0")) }}
+  {{- if not (hasKey .Values.vulnerabilityservices.gsa.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.vulnerabilityservices.gsa.ingress.annotations "kubernetes.io/ingress.class" .Values.vulnerabilityservices.gsa.ingress.className}}
+  {{- end }}
+{{- end }}
+{{- if ge $k8sVersion "1.19.0" -}}
+apiVersion: networking.k8s.io/v1
+{{- else if ge $k8sVersion "1.14.0" -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "openvasd.labels" . | nindent 4 }}
+  {{- with .Values.vulnerabilityservices.gsa.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if and .Values.vulnerabilityservices.gsa.ingress.className (ge $k8sVersion "1.18.0") }}
+  ingressClassName: {{ .Values.vulnerabilityservices.gsa.ingress.className }}
+  {{- end }}
+  {{- if .Values.vulnerabilityservices.gsa.ingress.tls }}
+  tls:
+    {{- range .Values.vulnerabilityservices.gsa.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.vulnerabilityservices.gsa.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- if and .pathType (ge $k8sVersion "1.18.0") }}
+            pathType: {{ .pathType }}
+            {{- end }}
+            backend:
+              {{- if ge $k8sVersion "1.19.0" }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $svcPort }}
+              {{- else }}
+              serviceName: {{ $fullName }}
+              servicePort: {{ $svcPort }}
+              {{- end }}
+          {{- end }}
+    {{- end }}
+{{- end }}

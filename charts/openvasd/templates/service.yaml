@@ -15,5 +15,11 @@ spec:
       {{ end }}
       protocol: TCP
       name: http
+    {{- if eq .Values.vulnerabilityservices.enabled true }}
+    - port: {{ .Values.vulnerabilityservices.gsa.service.port }}
+      targetPort: 9392
+      protocol: TCP
+      name: gsa
+    {{ end }}
   selector:
     {{- include "openvasd.selectorLabels" . | nindent 4 }}

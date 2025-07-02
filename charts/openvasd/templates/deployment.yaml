@@ -29,19 +29,35 @@ spec:
       - name: redis-socket
         emptyDir: {}
       - name: nasl-plugins
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: nasl-plugins-pvc
       - name: notus-data
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: notus-data-pvc
       - name: openvas-config
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: openvas-config-pvc
       - name: scan-config 
         emptyDir: {}
       - name: ospd-config
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: ospd-config-pvc
       - name: ospd-socket
         emptyDir: {}
       - name: openvas-logs
         emptyDir: {}
+      {{- if eq .Values.vulnerabilityservices.enabled true }}
+      - name: gvmd-socket
+        emptyDir: {}
+      - name: gvmd-data
+        persistentVolumeClaim:
+          claimName: gvmd-data-pvc
+      - name: psql-data
+        persistentVolumeClaim:
+          claimName: psql-data-pvc
+      - name: psql-socket
+        emptyDir: {}
+      {{ end }}
       {{- if eq .Values.openvasd.tls.certificates.deploy_server true }}
       - name: ingress-certificate
         secret:
@@ -83,7 +99,50 @@ spec:
         env:
           - name: MOUNT_PATH 
             value: "/mnt/notus" 
-
+      {{- if eq .Values.vulnerabilityservices.enabled true }}
+      - name: scap-data
+        image: "{{ .Values.vulnerabilityservices.scapdata.repository }}:{{ .Values.vulnerabilityservices.scapdata.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.scapdata.pullPolicy }}"
+        volumeMounts:
+          - name: gvmd-data
+            mountPath: /var/lib/gvm/scap-data
+            subPath: scap-data
+      - name: cert-data
+        image: "{{ .Values.vulnerabilityservices.certdata.repository }}:{{ .Values.vulnerabilityservices.certdata.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.certdata.pullPolicy }}"
+        volumeMounts:
+          - name: gvmd-data
+            mountPath: /var/lib/gvm/cert-data
+            subPath: cert-data
+      - name: dnf-cert-data
+        image: "{{ .Values.vulnerabilityservices.dnfcertdata.repository }}:{{ .Values.vulnerabilityservices.dnfcertdata.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.dnfcertdata.pullPolicy }}"
+        volumeMounts:
+          - name: gvmd-data
+            mountPath: /var/lib/gvm/cert-data
+            subPath: cert-data
+      - name: data-objects
+        image: "{{ .Values.vulnerabilityservices.dataobjects.repository }}:{{ .Values.vulnerabilityservices.dataobjects.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.dataobjects.pullPolicy }}"
+        volumeMounts:
+          - name: gvmd-data
+            mountPath: /var/lib/gvm/data-objects
+            subPath: data-objects
+      - name: reports-formats
+        image: "{{ .Values.vulnerabilityservices.reportsformats.repository }}:{{ .Values.vulnerabilityservices.reportsformats.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.reportsformats.pullPolicy }}"
+        volumeMounts:
+          - name: gvmd-data
+            mountPath: /var/lib/gvm/data-objects
+            subPath: data-objects
+      - name: gpg-data
+        image: "{{ .Values.vulnerabilityservices.gpgdata.repository }}:{{ .Values.vulnerabilityservices.gpgdata.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.gpgdata.pullPolicy }}"
+        volumeMounts:
+          - name: openvas-config
+            mountPath: /etc/openvas/gnupg
+            subPath: gnupg
+      {{ end }}
       {{- if eq .Values.openvasd.scanner_type "ospd" }}
       - name: ospd-disable-notus-hashsum-verification #since can mount local volumes which may be altered we have to disable hashsum verification for notus  
         image: "{{ .Values.ospd.repository }}:{{ .Values.ospd.tag }}"
@@ -136,7 +195,6 @@ spec:
       {{- if eq .Values.openvasd.scanner_type "ospd"}}
       - name: openvas
         image: "{{ .Values.ospd.repository }}:{{ .Values.ospd.tag }}"
-
         imagePullPolicy: Always
         command: [ "tail", "-f", "/var/log/gvm/openvas.log" ]
         volumeMounts:
@@ -387,6 +445,46 @@ spec:
             add:
               - NET_ADMIN
               - NET_RAW
+      {{ end }}
+      {{- if eq .Values.vulnerabilityservices.enabled true }}
+      - name: postgres-gvm
+        image: "{{ .Values.vulnerabilityservices.postgresgvm.repository }}:{{ .Values.vulnerabilityservices.postgresgvm.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.postgresgvm.pullPolicy }}"
+        volumeMounts:
+          - name: psql-data
+            mountPath: /var/lib/postgresql
+          - name: psql-socket
+            mountPath: /var/run/postgresql
+      - name: gvm-tools
+        image: "{{ .Values.vulnerabilityservices.gvmtools.repository }}:{{ .Values.vulnerabilityservices.gvmtools.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.gvmtools.pullPolicy }}"
+        volumeMounts:
+        - name: gvmd-socket
+          mountPath: /run/gvmd
+        - name: ospd-socket
+          mountPath: /run/ospd/
+      - name: gvmd
+        image: "{{ .Values.vulnerabilityservices.gvmd.repository }}:{{ .Values.vulnerabilityservices.gvmd.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.gvmd.pullPolicy }}"
+        volumeMounts:
+        - name: gvmd-socket
+          mountPath: /run/gvmd
+        - name: gvmd-data
+          mountPath: /var/lib/gvm
+        - name: nasl-plugins
+          mountPath: /var/lib/openvas/plugins
+        - name: ospd-socket
+          mountPath: /run/ospd/
+        - name: psql-data
+          mountPath: /var/lib/postgresql
+        - name: psql-socket
+          mountPath: /var/run/postgresql
+      - name: gsa
+        image: "{{ .Values.vulnerabilityservices.gsa.repository }}:{{ .Values.vulnerabilityservices.gsa.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.gsa.pullPolicy }}"
+        volumeMounts:
+        - name: gvmd-socket
+          mountPath: /run/gvmd
       {{ end }}
       # what does it mean?
       {{- with .Values.nodeSelector }}

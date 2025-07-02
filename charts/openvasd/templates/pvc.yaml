@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nasl-plugins-pvc
+spec:
+  accessModes:
+    - {{ .Values.vulnerabilitytests.pvc.accessMode }}
+  storageClassName: {{ .Values.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.vulnerabilitytests.pvc.size }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: notus-data-pvc
+spec:
+  accessModes:
+    - {{ .Values.notusdata.pvc.accessMode }}
+  storageClassName: {{ .Values.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.notusdata.pvc.size }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ospd-config-pvc
+spec:
+  accessModes:
+    - {{ .Values.ospd.pvc.accessMode }}
+  storageClassName: {{ .Values.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.ospd.pvc.size }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openvas-config-pvc
+spec:
+  accessModes:
+    - {{ .Values.openvas.pvc.accessMode }}
+  storageClassName: {{ .Values.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.openvas.pvc.size }}
+---
+{{- if eq .Values.vulnerabilityservices.enabled true }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gvmd-data-pvc
+spec:
+  accessModes:
+    - {{ .Values.vulnerabilityservices.gvmd.pvc.accessMode }}
+  storageClassName: {{ .Values.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.vulnerabilityservices.gvmd.pvc.size }}
+{{ end }}
+---
+{{- if eq .Values.vulnerabilityservices.enabled true }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: psql-data-pvc
+spec:
+  accessModes:
+    - {{ .Values.vulnerabilityservices.postgresgvm.pvc.accessMode }}
+  storageClassName: {{ .Values.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.vulnerabilityservices.postgresgvm.pvc.size }}
+{{ end }}
