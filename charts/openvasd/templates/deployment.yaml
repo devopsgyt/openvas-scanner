@@ -513,14 +513,14 @@ spec:
             mountPath: /var/lib/postgresql
           - name: psql-socket
             mountPath: /var/run/postgresql
-      - name: gvm-tools
-        image: "{{ .Values.vulnerabilityservices.gvmtools.repository }}:{{ .Values.vulnerabilityservices.gvmtools.tag }}"
-        imagePullPolicy: "{{ .Values.vulnerabilityservices.gvmtools.pullPolicy }}"
-        volumeMounts:
-        - name: gvmd-socket
-          mountPath: /run/gvmd
-        - name: ospd-socket
-          mountPath: /run/ospd
+#      - name: gvm-tools
+#        image: "{{ .Values.vulnerabilityservices.gvmtools.repository }}:{{ .Values.vulnerabilityservices.gvmtools.tag }}"
+#        imagePullPolicy: "{{ .Values.vulnerabilityservices.gvmtools.pullPolicy }}"
+#        volumeMounts:
+#        - name: gvmd-socket
+#          mountPath: /run/gvmd
+#        - name: ospd-socket
+#          mountPath: /run/ospd
       - name: gvmd
         image: "{{ .Values.vulnerabilityservices.gvmd.repository }}:{{ .Values.vulnerabilityservices.gvmd.tag }}"
         imagePullPolicy: "{{ .Values.vulnerabilityservices.gvmd.pullPolicy }}"
