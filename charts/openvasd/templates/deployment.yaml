@@ -57,12 +57,6 @@ spec:
           claimName: psql-data-pvc
       - name: psql-socket
         emptyDir: {}
-      - name: scap-data
-        emptyDir: {}
-      - name: cert-data
-        emptyDir: {}
-      - name: data-objects
-        emptyDir: {}
       - name: gpg-data
         emptyDir: {}
       {{ end }}
@@ -529,6 +523,9 @@ spec:
           mountPath: /run/gvmd
         - name: gvmd-data
           mountPath: /var/lib/gvm
+        - name: gvmd-data
+          mountPath: /var/lib/gvm/data-objects/gvmd
+          subPath: data-objects
         - name: nasl-plugins
           mountPath: /var/lib/openvas/plugins
         - name: ospd-socket
