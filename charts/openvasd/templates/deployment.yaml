@@ -106,7 +106,16 @@ spec:
             mountPath: /mnt/notus
         env:
           - name: MOUNT_PATH 
-            value: "/mnt/notus" 
+            value: "/mnt/notus"
+      - name: gvmd-data
+        image: "{{ .Values.vulnerabilityservices.gvmd.repository }}:{{ .Values.vulnerabilityservices.gvmd.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.gvmd.pullPolicy }}"
+        volumeMounts:
+          - name: gvmd-data
+            mountPath: /mnt
+        env:
+          - name: MOUNT_PATH 
+            value: "/mnt"
       {{- if eq .Values.vulnerabilityservices.enabled true }}
       - name: scap-data
         image: "{{ .Values.vulnerabilityservices.scapdata.repository }}:{{ .Values.vulnerabilityservices.scapdata.tag }}"
