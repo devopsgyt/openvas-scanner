@@ -177,7 +177,7 @@ spec:
         command: ['/bin/sh', '-c']
         args:
           - |
-            if [ ! -d /mnt/postgresql/ ]; then
+            if [ ! -d /mnt/postgresql/13 ]; then
               echo "Empty directory. Copying data..."
               cp -rp /var/lib/postgresql/* /mnt/postgresql/
               echo "Files copied."
