@@ -3,12 +3,12 @@ entries:
   openvasd:
   - apiVersion: v2
     appVersion: 23.20.3
-    created: "2025-07-03T08:13:58.301574842-06:00"
+    created: "2025-07-03T09:41:42.516553835-06:00"
     description: A Helm chart for Kubernetes
-    digest: ed11e2d2386dc5fadf01805012a49c8c909132d7514c42eec21a1c3e6207055c
+    digest: 749d256b745052bec1c517b8bf6b6d53206c523d8b00885fc49316ffcd4c08c1
     name: openvasd
     type: application
     urls:
     - https://devopsgyt.github.io/openvas-scanner/openvasd-0.1.0.tgz
     version: 0.1.0
-generated: "2025-07-03T08:13:58.296072353-06:00"
+generated: "2025-07-03T09:41:42.502160264-06:00"

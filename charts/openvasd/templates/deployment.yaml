@@ -168,6 +168,21 @@ spec:
         env:
           - name: MOUNT_PATH 
             value: "/mnt/gnupg"
+      - name: postgres-gvm-data
+        image: "{{ .Values.vulnerabilityservices.postgresgvm.repository }}:{{ .Values.vulnerabilityservices.postgresgvm.tag }}"
+        imagePullPolicy: "{{ .Values.vulnerabilityservices.postgresgvm.pullPolicy }}"
+        volumeMounts:
+          - name: psql-data
+            mountPath: /mnt/postgresql
+        command: ['/bin/sh', '-c']
+        args:
+          - if [ ! -d /mnt/postgresql/ ]; then
+              echo "Empty directory. Copying data..."
+              cp -rp /var/lib/postgresql/* /mnt/postgresql/
+              echo "Files copied."
+            else
+              echo "Directory is not empty. Skipping step."
+            fi
       {{ end }}
       {{- if eq .Values.openvasd.scanner_type "ospd" }}
       - name: ospd-disable-notus-hashsum-verification #since can mount local volumes which may be altered we have to disable hashsum verification for notus  
@@ -461,9 +476,9 @@ spec:
         - name: openvas-config
           mountPath: /etc/openvas
         - name: ospd-config
-          mountPath: /etc/gvm/
+          mountPath: /etc/gvm
         - name: ospd-socket
-          mountPath: /run/ospd/
+          mountPath: /run/ospd
         - name: openvas-logs
           mountPath: /var/log/gvm
         securityContext:
@@ -488,7 +503,7 @@ spec:
         - name: gvmd-socket
           mountPath: /run/gvmd
         - name: ospd-socket
-          mountPath: /run/ospd/
+          mountPath: /run/ospd
       - name: gvmd
         image: "{{ .Values.vulnerabilityservices.gvmd.repository }}:{{ .Values.vulnerabilityservices.gvmd.tag }}"
         imagePullPolicy: "{{ .Values.vulnerabilityservices.gvmd.pullPolicy }}"
@@ -500,7 +515,7 @@ spec:
         - name: nasl-plugins
           mountPath: /var/lib/openvas/plugins
         - name: ospd-socket
-          mountPath: /run/ospd/
+          mountPath: /run/ospd
         - name: psql-data
           mountPath: /var/lib/postgresql
         - name: psql-socket
