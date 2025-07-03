@@ -113,9 +113,16 @@ spec:
         volumeMounts:
           - name: gvmd-data
             mountPath: /mnt
-        env:
-          - name: MOUNT_PATH 
-            value: "/mnt"
+        command: ['/bin/sh', '-c']
+        args:
+          - |
+            if [ ! -d /mnt/gvmd ]; then
+              echo "Empty directory. Copying data..."
+              cp -rp /var/lib/gvm/* /mnt/
+              echo "Files copied."
+            else
+              echo "Directory is not empty. Skipping step."
+            fi
       {{- if eq .Values.vulnerabilityservices.enabled true }}
       - name: scap-data
         image: "{{ .Values.vulnerabilityservices.scapdata.repository }}:{{ .Values.vulnerabilityservices.scapdata.tag }}"
