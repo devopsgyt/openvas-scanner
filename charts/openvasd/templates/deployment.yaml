@@ -79,7 +79,7 @@ spec:
       initContainers:
       - name: nasl
         image: "{{ .Values.vulnerabilitytests.repository }}:{{ .Values.vulnerabilitytests.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: "{{ .Values.vulnerabilitytests.pullPolicy }}"
         volumeMounts:
           - name: nasl-plugins
             mountPath: /mnt/nasl
@@ -88,7 +88,7 @@ spec:
             value: "/mnt/nasl"
       - name: normalize-nasl-feed
         image: "{{ .Values.vulnerabilitytests.repository }}:{{ .Values.vulnerabilitytests.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: "{{ .Values.vulnerabilitytests.pullPolicy }}"
         volumeMounts:
           - name: nasl-plugins
             mountPath: /mnt/nasl
@@ -100,7 +100,7 @@ spec:
             rm -r /mnt/nasl/21.04;
       - name: notus-data
         image: "{{ .Values.notusdata.repository }}:{{ .Values.notusdata.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: "{{ .Values.notusdata.pullPolicy }}"
         volumeMounts:
           - name: notus-data
             mountPath: /mnt/notus
@@ -172,7 +172,7 @@ spec:
       {{- if eq .Values.openvasd.scanner_type "ospd" }}
       - name: ospd-disable-notus-hashsum-verification #since can mount local volumes which may be altered we have to disable hashsum verification for notus  
         image: "{{ .Values.ospd.repository }}:{{ .Values.ospd.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: "{{ .Values.ospd.pullPolicy }}"
         volumeMounts:
           - name: ospd-config
             mountPath: /mnt/ovc
@@ -180,7 +180,7 @@ spec:
         args: ["cp /etc/gvm/ospd-openvas.conf /mnt/ovc/ospd-openvas.conf && printf \"disable_notus_hashsum_verification = True\n\" >> /mnt/ovc/ospd-openvas.conf"]
       - name: create-dummy-openvas-log
         image: "{{ .Values.ospd.repository }}:{{ .Values.ospd.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: "{{ .Values.ospd.pullPolicy }}"
         volumeMounts:
           - name: openvas-logs
             mountPath: /mnt/ovc
@@ -189,7 +189,7 @@ spec:
       {{ else }}
       - name: create-dummy-openvas-log
         image: "{{ .Values.openvas.repository }}:{{ .Values.openvas.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: "{{ .Values.openvas.pullPolicy }}"
         volumeMounts:
           - name: openvas-logs
             mountPath: /mnt/ovc
@@ -198,7 +198,7 @@ spec:
       {{ end }} 
       - name: mqtt-broker-openvas-fix
         image: "{{ .Values.ospd.repository }}:{{ .Values.ospd.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: "{{ .Values.ospd.pullPolicy }}"
         volumeMounts:
           - name: openvas-config
             mountPath: /mnt/ovc
@@ -211,7 +211,7 @@ spec:
       containers:
       - name: redis
         image: "{{ .Values.redis.repository }}:{{ .Values.redis.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.redis.pullPolicy }}
         volumeMounts:
         - name: redis-socket
           mountPath: /run/redis
@@ -221,7 +221,7 @@ spec:
       {{- if eq .Values.openvasd.scanner_type "ospd"}}
       - name: openvas
         image: "{{ .Values.ospd.repository }}:{{ .Values.ospd.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: "{{ .Values.ospd.pullPolicy }}"
         command: [ "tail", "-f", "/var/log/gvm/openvas.log" ]
         volumeMounts:
         - name: scan-config
@@ -255,7 +255,7 @@ spec:
      # openvas log replicate
       - name: openvas
         image: "{{ .Values.openvas.repository }}:{{ .Values.openvas.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: "{{ .Values.openvas.pullPolicy }}"
         command: [ "tail", "-f", "/var/log/gvm/openvas.log" ]
         volumeMounts:
         - name: redis-socket
@@ -343,7 +343,7 @@ spec:
      # openvas log replicate end
       - name: openvasd
         image: "{{ .Values.openvas.repository }}:{{ .Values.openvas.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: "{{ .Values.openvas.pullPolicy }}"
         volumeMounts:
         - name: redis-socket
           mountPath: /run/redis
@@ -450,7 +450,7 @@ spec:
       {{- if eq .Values.openvasd.scanner_type "ospd" }}
       - name: ospd
         image: "{{ .Values.ospd.repository }}:{{ .Values.ospd.tag }}"
-        imagePullPolicy: Always
+        imagePullPolicy: "{{ .Values.ospd.pullPolicy }}"
         volumeMounts:
         - name: redis-socket
           mountPath: /run/redis
