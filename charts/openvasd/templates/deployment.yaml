@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "openvasd.fullname" . }}
   labels:
@@ -9,6 +9,10 @@ spec:
   selector:
     matchLabels:
       {{- include "openvasd.selectorLabels" . | nindent 6 }}
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -153,21 +157,21 @@ spec:
         imagePullPolicy: "{{ .Values.vulnerabilityservices.dataobjects.pullPolicy }}"
         volumeMounts:
           - name: gvmd-data
-            mountPath: /mnt/data-objects
+            mountPath: /mnt/data-objects/gvmd
             subPath: data-objects
         env:
           - name: MOUNT_PATH 
-            value: "/mnt/data-objects"
+            value: "/mnt/data-objects/gvmd"
       - name: reports-formats
         image: "{{ .Values.vulnerabilityservices.reportsformats.repository }}:{{ .Values.vulnerabilityservices.reportsformats.tag }}"
         imagePullPolicy: "{{ .Values.vulnerabilityservices.reportsformats.pullPolicy }}"
         volumeMounts:
           - name: gvmd-data
-            mountPath: /mnt/data-objects
+            mountPath: /mnt/data-objects/gvmd
             subPath: data-objects
         env:
           - name: MOUNT_PATH 
-            value: "/mnt/data-objects"
+            value: "/mnt/data-objects/gvmd"
       - name: gpg-data
         image: "{{ .Values.vulnerabilityservices.gpgdata.repository }}:{{ .Values.vulnerabilityservices.gpgdata.tag }}"
         imagePullPolicy: "{{ .Values.vulnerabilityservices.gpgdata.pullPolicy }}"
