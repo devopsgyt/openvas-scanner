@@ -158,7 +158,7 @@ spec:
         volumeMounts:
           - name: gvmd-data
             mountPath: /mnt/data-objects/gvmd
-            subPath: data-objects
+            subPath: gvmd
         env:
           - name: MOUNT_PATH 
             value: "/mnt/data-objects/gvmd"
@@ -168,7 +168,7 @@ spec:
         volumeMounts:
           - name: gvmd-data
             mountPath: /mnt/data-objects/gvmd
-            subPath: data-objects
+            subPath: gvmd
         env:
           - name: MOUNT_PATH 
             value: "/mnt/data-objects/gvmd"
@@ -529,7 +529,7 @@ spec:
           mountPath: /var/lib/gvm
         - name: gvmd-data
           mountPath: /var/lib/gvm/data-objects/gvmd
-          subPath: data-objects
+          subPath: gvmd
         - name: nasl-plugins
           mountPath: /var/lib/openvas/plugins
         - name: ospd-socket
